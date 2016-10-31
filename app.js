@@ -155,7 +155,7 @@ try{
 	var peers = manual.credentials.peers;
 	console.log('loading hardcoded peers');
 	var users = null;																			//users are only found if security is on
-	if(manual.credentials.users) users = manual.credentials.users;
+	if(manual.credentials.users) users = null;
 	console.log('loading hardcoded users');
 }
 catch(e){
@@ -193,18 +193,18 @@ if(process.env.VCAP_SERVICES){																	//load from vcap, search for serv
 // ==================================
 var options = 	{
 					network:{
-						peers: [peers[0]],																	//lets only use the first peer! since we really don't need any more than 1
+                                                peers: peers,
 						users: users,																		//dump the whole thing, sdk will parse for a good one
 						options: {
-									quiet: true, 															//detailed debug messages on/off true/false
-									tls: true, 																//should app to peer communication use tls?
+									quiet: false, 															//detailed debug messages on/off true/false
+									tls: false, 																//should app to peer communication use tls?
 									maxRetry: 1																//how many times should we retry register before giving up
 								}
 					},
 					chaincode:{
-						zip_url: 'https://github.com/ibm-blockchain/marbles-chaincode/archive/master.zip',
+						zip_url: 'https://github.com/chenlin2/marbles-chaincode/archive/master.zip',
 						unzip_dir: 'marbles-chaincode-master/hyperledger/part2',							//subdirectroy name of chaincode after unzipped
-						git_url: 'https://github.com/ibm-blockchain/marbles-chaincode/hyperledger/part2',	//GO get http url
+						git_url: 'https://github.com/chenlin2/marbles-chaincode/hyperledger/part2',	//GO get http url
 					
 						//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
 						//deployed_name: '8c5677016abb7b4885b8dc40bb5b28f1554888cd766e2c945bc61bca03b349092f19197d32785254c692c9210db34c31821efc89e8a9f4dcb3f5575bebb4584b'
@@ -229,9 +229,7 @@ ibc.load(options, function (err, cc){														//parse/load chaincode, respo
 
 		// ---- To Deploy or Not to Deploy ---- //
 		if(!cc.details.deployed_name || cc.details.deployed_name === ''){					//yes, go deploy
-			cc.deploy('init', ['99'], {save_path: './cc_summaries', delay_ms: 50000}, function(e){ //delay_ms is milliseconds to wait after deploy for conatiner to start, 50sec recommended
-				check_if_deployed(e, 1);
-			});
+			cc.deploy('init', ['99'], null,cb_deployed);
 		}
 		else{																				//no, already deployed
 			console.log('chaincode summary file indicates chaincode has been previously deployed');
